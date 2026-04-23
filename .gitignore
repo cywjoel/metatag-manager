@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Session cookies (user can choose name)
+*.json
+
+# Input and output files
+*.txt
+*.json
+*.xlsx
+*.csv
+
+# Log files
+logs/
