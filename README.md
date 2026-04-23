@@ -58,12 +58,13 @@ uv run playwright install chromium
 ```
 metatag-manager/
 ├── main.py                        # CLI entry point
-├── scraper.py                     # Core scraping logic
 ├── pyproject.toml
 ├── auth.json                      # Session cookies (generated — do not commit)
-└── utils/
-    ├── connectors.py              # URL input connectors (.txt, .json, .xlsx, .csv)
-    └── create_login.py            # Generate auth.json using Playwright
+└── src/
+    ├── scraper.py                 # Core scraping logic
+    └── utils/
+        ├── connectors.py          # URL input connectors (.txt, .json, .xlsx, .csv)
+        └── create_login.py        # Generate auth.json using Playwright
 ```
 
 ---
@@ -252,13 +253,13 @@ Use this for Vercel password-protected deployments.
 
 ```sh
 # Prompts for password securely (recommended)
-uv run utils/create_login.py https://example.com
+uv run src/utils/create_login.py https://example.com
 
 # Pass password explicitly (e.g. in a CI environment)
-uv run utils/create_login.py https://example.com --password "secret"
+uv run src/utils/create_login.py https://example.com --password "secret"
 
 # Custom output path
-uv run utils/create_login.py https://example.com --output my-auth.json
+uv run src/utils/create_login.py https://example.com --output my-auth.json
 ```
 
 | Argument | Default | Description |

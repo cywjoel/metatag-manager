@@ -5,8 +5,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scraper import scrape, scrape_many
-from utils.connectors import read_file
+from src.scraper import scrape, scrape_many
+from src.utils.connectors import read_file
 
 
 def _pretty_print(result: dict) -> None:
