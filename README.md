@@ -182,11 +182,21 @@ uv run main.py --file urls.xlsx --sheet "Page List" --url-column "Page URL" --ou
 
 ### CSV (.csv)
 
-Every non-empty cell across all rows is treated as a URL. Multiple URLs may appear on one row or across multiple rows.
+The first row is treated as a header row. By default, the connector reads from a column named `url` (case-insensitive). Use `--url-column` to specify a different column header.
 
 ```
-https://example.com,https://example.com/about
-https://example.com/contact
+name,url
+Home,https://example.com
+About,https://example.com/about
+Contact,https://example.com/contact
+```
+
+```sh
+# Default — looks for a column named "url"
+uv run main.py --file urls.csv --output results.json
+
+# Custom column name
+uv run main.py --file urls.csv --url-column "Page URL" --output results.json
 ```
 
 ---
@@ -335,7 +345,7 @@ usage: main.py [-h] [--file FILE] [--json] [--sheet SHEET] [--url-column COLUMN]
 | `url` | — | One or more URLs to scrape (positional, optional if `--file` is used) |
 | `--file FILE` | — | Path to a `.txt`, `.json`, `.xlsx`, or `.csv` file containing URLs |
 | `--sheet SHEET` | Active sheet | Sheet name to read from (`.xlsx` files only) |
-| `--url-column COLUMN` | `URL` | Column header to read URLs from (`.xlsx` files only, case-insensitive) |
+| `--url-column COLUMN` | `url` | Column header to read URLs from (`.xlsx` and `.csv` files, case-insensitive) |
 | `--json` | Off | Force JSON output for a single URL |
 | `--output FILE` | stdout | Write JSON output to a file (implies `--json`) |
 | `--timeout N` | `10` | HTTP request timeout in seconds |

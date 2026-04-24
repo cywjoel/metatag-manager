@@ -14,8 +14,8 @@ _read_json(path)     JSON array of objects, each expected to have a "url" key
                     (case-insensitive). Plain string items are also accepted.
 _read_xlsx(path)     Excel workbook (.xlsx); URLs are read from a column whose
                     header matches "URL" (case-insensitive) in the active sheet.
-_read_csv(path)      CSV file; every non-empty cell across all rows is treated
-                    as a URL.
+_read_csv(path)      CSV file with a header row; URLs are read from a column
+                    matching ``url_column`` (case-insensitive, default ``"url"``).
 """
 
 import csv
@@ -197,25 +197,51 @@ def _read_xlsx(
     return urls
 
 
-def _read_csv(path: str) -> list[str]:
-    """Read URLs from a CSV file.
+def _read_csv(path: str, url_column: str = "url") -> list[str]:
+    """Read URLs from a CSV file with a header row.
 
-    Every non-empty cell across all rows is treated as a URL. The file may
-    contain a single row or multiple rows of comma-separated URLs.
+    The first row is treated as a header row. A column matching ``url_column``
+    (case-insensitive, default ``"url"``) must be present. All subsequent
+    non-empty cells in that column are returned as URLs.
+
+    Raises ``ValueError`` if the file is empty or no column matching
+    ``url_column`` is found.
 
     Example file::
 
-        https://www.example.com,https://www.example.com/about
-        https://www.example.com/contact
+        name,url
+        Home,https://www.example.com
+        About,https://www.example.com/about
     """
     logger.debug("Opening CSV file: '%s'.", path)
     urls: list[str] = []
     with open(path, newline="") as f:
-        for row in csv.reader(f):
-            for cell in row:
-                value = cell.strip()
-                if value:
-                    urls.append(value)
+        reader = csv.DictReader(f)
+
+        if not reader.fieldnames:
+            raise ValueError("The CSV file appears to be empty.")
+
+        matched_col = next(
+            (
+                col
+                for col in reader.fieldnames
+                if col.strip().lower() == url_column.strip().lower()
+            ),
+            None,
+        )
+        if matched_col is None:
+            raise ValueError(
+                f"No {url_column!r} column found in the CSV file. "
+                f"Headers found: {list(reader.fieldnames)!r}"
+            )
+        logger.debug("Found %r column (header: '%s').", url_column, matched_col)
+
+        for row in reader:
+            value = (row[matched_col] or "").strip()
+            if value:
+                logger.debug("Found URL: '%s'.", value)
+                urls.append(value)
+
     logger.info("Read %d URL(s) from '%s'.", len(urls), path)
     return urls
 
@@ -242,9 +268,9 @@ def read_file(
     ``sheet_name`` is only applicable to ``.xlsx`` files; it selects the sheet
     to read from. When ``None``, the workbook's active sheet is used.
 
-    ``url_column`` is only applicable to ``.xlsx`` files; it specifies the
-    header name of the column containing URLs (case-insensitive, default
-    ``"URL"``).
+    ``url_column`` applies to ``.xlsx`` and ``.csv`` files; it specifies the
+    header name of the column containing URLs (case-insensitive). Defaults to
+    ``"URL"`` for ``.xlsx`` and ``"url"`` for ``.csv``.
 
     Raises ``ValueError`` for unrecognised extensions.
     """
@@ -258,4 +284,6 @@ def read_file(
     logger.debug("Detected file type '%s', dispatching to %s.", ext, connector.__name__)
     if ext == ".xlsx":
         return connector(path, sheet_name=sheet_name, url_column=url_column)
+    if ext == ".csv":
+        return connector(path, url_column=url_column)
     return connector(path)

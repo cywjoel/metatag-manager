@@ -68,7 +68,7 @@ def main() -> None:
         "--url-column",
         default="URL",
         metavar="COLUMN",
-        help="Column header name to read URLs from in .xlsx files (default: 'URL', case-insensitive).",
+        help="Column header name to read URLs from in .xlsx and .csv files (default: 'url', case-insensitive).",
     )
     parser.add_argument(
         "--output",
